@@ -52,7 +52,7 @@ data:
         {{- if .Values.ipFamily.ipv4.enabled}}
         listen 8080;
         {{- end}}
-        {{- if .Values.ipFamily.ipv6.enabled }}
+        {{- if .Values.ipFamily.ipv6.enabled}}
         listen [::]:8080;
         {{- end }}
         server_tokens off;
