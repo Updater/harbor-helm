@@ -129,6 +129,12 @@ spec:
         resources:
 {{ toYaml .Values.core.resources | indent 10 }}
 {{- end }}
+      {{- if .Values.init.enabled }}
+      initContainers:
+      - name: {{ .Values.init.name }} # notary-db-init
+        image: {{ .Values.init.image.repository }}:{{ .Values.init.image.tag }} # harbor-init:0.2
+        command: [] # ['sh', '-c', "bin/notary-db-init.sh"]
+      {{- end }}
       volumes:
       - name: config
         configMap:

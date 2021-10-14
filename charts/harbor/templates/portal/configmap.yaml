@@ -35,7 +35,7 @@ data:
             ssl_prefer_server_ciphers on;
             ssl_session_cache shared:SSL:10m;
     {{- else }}
-            {{- if .Values.ipFamily.ipv4.enabled }}
+            {{- if .Values.ipFamily.ipv4.enabled}}
             listen {{ template "harbor.portal.containerPort" . }};
             {{- end }}
             {{- if .Values.ipFamily.ipv6.enabled}}

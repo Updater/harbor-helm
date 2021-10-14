@@ -56,7 +56,7 @@ data:
 
       {{- if .Values.notary.enabled }}
       server {
-        {{- if .Values.ipFamily.ipv4.enabled }}
+        {{- if .Values.ipFamily.ipv4.enabled}}
         listen 4443 ssl;
         {{- end}}
         {{- if .Values.ipFamily.ipv6.enabled}}
@@ -93,10 +93,10 @@ data:
       {{- end }}
 
       server {
-        {{- if .Values.ipFamily.ipv4.enabled }}
+        {{- if .Values.ipFamily.ipv4.enabled}}
         listen 8443 ssl;
         {{- end}}
-        {{- if .Values.ipFamily.ipv6.enabled }}
+        {{- if .Values.ipFamily.ipv6.enabled}}
         listen [::]:8443 ssl;
         {{- end }}
     #    server_name harbordomain.com;
@@ -214,10 +214,10 @@ data:
         }
       }
         server {
-          {{- if .Values.ipFamily.ipv4.enabled }}
+          {{- if .Values.ipFamily.ipv4.enabled}}
           listen 8080;
           {{- end}}
-          {{- if .Values.ipFamily.ipv6.enabled }}
+          {{- if .Values.ipFamily.ipv6.enabled}}
           listen [::]:8080;
           {{- end}}
           #server_name harbordomain.com;

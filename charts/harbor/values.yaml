@@ -850,3 +850,11 @@ metrics:
       #   targetLabel: nodename
       #   replacement: $1
       #   action: replace
+
+## Init container to create notary_server and notary_signer dbs if they don't exist
+init:
+  enabled: false
+  image:
+    repository: updater/harbor-init
+    tag: ""
+  name: ""
