@@ -5,39 +5,56 @@ on:
     paths:
       - 'charts/**'
 
+env:
+  HELM_EXPERIMENTAL_OCI: 1
+  REGISTRY: harbor.infra.updatron.com
+  CHARTMUSEUM: updater
+
 jobs:
-  lint-chart:
+  build-chart:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v1
-      - name: Run chart-testing (lint)
-        uses: helm/chart-testing-action@v2.1.0
+      - uses: actions/checkout@v2
+
+      - name: Check chart change
+        uses: Updater/paths-filter@v2
+        id: changes
         with:
-          command: lint
-          config: .github/ct.yaml
-  lint-docs:
-    runs-on: ubuntu-latest
-    needs: lint-chart
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v1
-      - name: Run helm-docs
-        run: .github/helm-docs.sh
-  kubeval-chart:
-    runs-on: ubuntu-latest
-    needs:
-      - lint-chart
-      - lint-docs
-    strategy:
-      matrix:
-        k8s:
-          - v1.18.20
-          - v1.19.13
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v1
-      - name: Run kubeval
-        env:
-          KUBERNETES_VERSION: ${{ matrix.k8s }}
-        run: .github/kubeval.sh
+          filters: |
+            chart:
+              - 'charts/**'
+      - name: install helm
+        if: steps.changes.outputs.chart == 'true'
+        run: |
+          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+          helm plugin install https://github.com/chartmuseum/helm-push
+      - name: cache helm
+        if: steps.changes.outputs.chart == 'true'
+        uses: actions/cache@v2
+        with:
+          path: |
+            /usr/local/bin/helm
+          key: helm-${{ runner.os }}-${{ hashFiles('/usr/local/bin/helm') }}
+          restore-keys: |
+            helm-${{ runner.os }}
+      - name: cache helm-push
+        if: steps.changes.outputs.chart == 'true'
+        uses: actions/cache@v2
+        with:
+          path: |
+            ./root/.local/share/helm/plugins/helm-push.git/bin/helm-cm-push
+          key: helm-push-${{ runner.os}}-${{ hashFiles('./root/.local/share/helm/plugins/helm-push.git/bin/helm-cm-push') }}
+          restore-keys: |
+            helm-push-${{ runner.os }}
+      - name: lint chart
+        if: steps.changes.outputs.chart == 'true'
+        working-directory: './charts/harbor'
+        run: |
+          helm lint --debug
+      - name: build and push chart
+        if: steps.changes.outputs.chart == 'true'
+        working-directory: './charts'
+        run: |
+          helm package harbor
+          helm repo add --username '${{ secrets.HARBOR_USERNAME }}' --password ${{ secrets.HARBOR_PASSWORD }} ${CHARTMUSEUM} https://${REGISTRY}/chartrepo/${CHARTMUSEUM}
+          helm cm-push harbor-* ${CHARTMUSEUM}

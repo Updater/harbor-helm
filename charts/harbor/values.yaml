@@ -858,3 +858,5 @@ init:
     repository: ""
     tag: ""
   name: ""
+
+# appVersion: v2.3.1
